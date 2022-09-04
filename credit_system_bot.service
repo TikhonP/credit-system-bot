@@ -6,7 +6,7 @@ After = network.target
 WorkingDirectory = /home/tikhon/credit-system-bot/
 
 User = tikhon
-ExecStart = /home/tikhon/credit-system-bot/env/bin/python lecha_albums_bot.py
+ExecStart = /home/tikhon/credit-system-bot/env/bin/python main.py
 Restart = on-failure
 
 [Install]
