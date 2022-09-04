@@ -85,7 +85,7 @@ def money_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(f"Запрос на получение {money_request.price} - {money_request.description} создан")
 
 
-def get_duties_for_admin():
+def get_duties_for_admin(update: Update, context: CallbackContext):
     user = User.get_user(update, context)
     if user.is_admin:
         text = "*Долги:*\n\n"
