@@ -5,6 +5,17 @@
 
 import os
 
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://2fb6ef76c9234fc2a0b77ef06b6fda68@o1075119.ingest.sentry.io/6716649",
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0
+)
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 import django
 from django.db.models import Sum
@@ -16,7 +27,7 @@ from db.models import User, MoneyRequest
 from telegram import Update, ParseMode
 from telegram.ext import CallbackContext, CommandHandler, Updater
 
-TOKEN = "5496006552:AAFlT9TuUwc-oz3BZgkZ2iX1acTdh0fXIsg"  # os.environ.get('MUSIC_QUEUE_TELEGRAM_TOKEN')
+TOKEN = os.environ.get('MUSIC_QUEUE_TELEGRAM_TOKEN')
 ADMIN_ID = 304915293
 
 
