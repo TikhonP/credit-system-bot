@@ -1,0 +1,13 @@
+[Unit]
+Description = Credit System Bot
+After = network.target
+
+[Service]
+WorkingDirectory = /home/tikhon/credit-system-bot/
+
+User = tikhon
+ExecStart = /home/tikhon/credit-system-bot/env/bin/python lecha_albums_bot.py
+Restart = on-failure
+
+[Install]
+WantedBy = multi-user.target
