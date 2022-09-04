@@ -122,6 +122,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler('help', help_command))
     dispatcher.add_handler(CommandHandler('money', money_command))
     dispatcher.add_handler(CommandHandler('duty', duty_command))
+    dispatcher.add_handler(CommandHandler('duties', get_duties_for_admin))
 
     updater.start_polling()
     updater.idle()
