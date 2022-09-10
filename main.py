@@ -79,14 +79,21 @@ def money_command(update: Update, context: CallbackContext) -> None:
     user = User.get_user(update, context)
     str_array = update.message.text.split()
 
-    if not str_array[1].isdigit():
-        update.message.reply_text('Неверный формат ввода')
+    try:
+        price = str_array[1]
+        description = ' '.join(str_array[2:])
+    except IndexError:
+        update.message.reply_text('Неверный формат ввода!')
         return
 
-    money = int(str_array[1])
+    if not price.isdigit():
+        update.message.reply_text('Неверный формат ввода!')
+        return
+
+    money = int(price)
     money_request = MoneyRequest.objects.create(
         price=money,
-        description=" ".join(str_array[2:]),
+        description=description,
         user=user
     )
 
