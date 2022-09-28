@@ -17,7 +17,7 @@ from django.db.models import Sum
 
 django.setup()
 
-from db.models import User, MoneyRequest, MoneyRetFiurn
+from db.models import User, MoneyRequest, MoneyReturn
 from telegram import Update, ParseMode
 from telegram.ext import CallbackContext, CommandHandler, Updater
 
