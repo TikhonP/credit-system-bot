@@ -1,8 +1,3 @@
-# import sys
-#
-# sys.dont_write_bytecode = True
-
-
 import os
 
 import sentry_sdk
@@ -22,7 +17,6 @@ from django.db.models import Sum
 
 django.setup()
 
-# Import your models for use in your script
 from db.models import User, MoneyRequest
 from telegram import Update, ParseMode
 from telegram.ext import CallbackContext, CommandHandler, Updater
@@ -54,16 +48,35 @@ def duty_command(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
     user = User.get_user(update, context)
     moneyRequests = user.moneyrequest_set.filter(is_done=False)
+    moneyReturns = user.moneyreturn_set.filter(is_done=False)
 
+    total_amount = moneyRequests.aggregate(Sum('price'))['price__sum']
     if moneyRequests.count() == 0:
+        update.message.reply_text('У вас нет долгов!')
+        return
+
+    if moneyReturns.count() != 0:
+        total_amount -= moneyReturns.aggregate(Sum('price'))['price__sum']
+
+    if total_amount == 0:
+        for moneyRequest in moneyRequests:
+            moneyRequest.is_done = True
+            moneyRequest.save()
+        for moneyReturn in moneyReturns:
+            moneyReturn.is_done = True
+            moneyReturn.save()
+
         update.message.reply_text('У вас нет долгов!')
         return
 
     text = "*Ваши долги:*\n\n"
     for moneyRequest in moneyRequests:
         text += f"*{moneyRequest.price}* - {moneyRequest.description}\n"
+    text += '\n'
+    for moneyReturn in moneyReturns:
+        text += f"*-{moneyReturn.price}* - {moneyReturn.description}\n"
 
-    text += "\nВсего: *{}*".format(moneyRequests.aggregate(Sum('price'))['price__sum'])
+    text += "\nВсего: *{}*".format(total_amount)
     update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
 
 
@@ -109,16 +122,58 @@ def get_duties_for_admin(update: Update, context: CallbackContext):
         text = "*Долги:*\n\n"
         for user in User.objects.filter(is_admin=False):
             moneyRequests = user.moneyrequest_set.filter(is_done=False)
+            moneyReturns = user.moneyreturn_set.filter(is_done=False)
 
+            total_amount = moneyRequests.aggregate(Sum('price'))['price__sum']
             if moneyRequests.count() == 0:
+                continue
+
+            if moneyReturns.count() != 0:
+                total_amount -= moneyReturns.aggregate(Sum('price'))['price__sum']
+
+            if total_amount == 0:
                 continue
 
             text += f"*{user.first_name} {user.last_name}*:\n"
             for moneyRequest in moneyRequests:
                 text += f"*{moneyRequest.price}* - {moneyRequest.description}\n"
+
+            for moneyReturn in moneyReturns:
+                text += f"*-{moneyReturn.price}* - {moneyReturn.description}\n"
+
             text += "\nВсего: *{}*\n\n".format(moneyRequests.aggregate(Sum('price'))['price__sum'])
 
         update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
+    else:
+        update.message.reply_text('Вы не админ!')
+
+
+def return_money_command(update: Update, context: CallbackContext) -> None:
+    user = User.get_user(update, context)
+    if user.is_admin:
+        str_array = update.message.text.split()
+
+        try:
+            price = str_array[1]
+            username = str_array[2]
+            description = ' '.join(str_array[3:])
+        except IndexError:
+            update.message.reply_text('Неверный формат ввода!')
+            return
+
+        if not price.isdigit():
+            update.message.reply_text('Неверный формат ввода!')
+            return
+
+        money = int(price)
+        return_user = User.objects.get(username=username)
+        money_return = MoneyReturn.objects.create(
+            price=money,
+            description=description,
+            user=return_user
+        )
+        update.message.reply_text(f"Возврат {money_return.price} - {money_return.description},"
+                                  f" *{return_user.first_name} {return_user.last_name}*")
     else:
         update.message.reply_text('Вы не админ!')
 
@@ -141,6 +196,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler('money', money_command))
     dispatcher.add_handler(CommandHandler('duty', duty_command))
     dispatcher.add_handler(CommandHandler('duties', get_duties_for_admin))
+    dispatcher.add_handler(CommandHandler('return', return_money_command))
 
     updater.start_polling()
     updater.idle()

@@ -144,3 +144,13 @@ class MoneyRequest(models.Model):
     description = models.CharField(max_length=256)
     date = models.DateTimeField(auto_now_add=True)
     is_done = models.BooleanField(default=False)
+
+
+class MoneyReturn(models.Model):
+    """Return money, with price, description, date and status"""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    price = models.IntegerField()
+    description = models.CharField(max_length=256)
+    date = models.DateTimeField(auto_now_add=True)
+    is_done = models.BooleanField(default=False)
