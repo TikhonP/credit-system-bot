@@ -166,7 +166,11 @@ def return_money_command(update: Update, context: CallbackContext) -> None:
             return
 
         money = int(price)
-        return_user = User.objects.get(username=username)
+        try:
+            return_user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            update.message.reply_text('Пользователь не найден!')
+            return
         money_return = MoneyReturn.objects.create(
             price=money,
             description=description,
