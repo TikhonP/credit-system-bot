@@ -177,7 +177,7 @@ def return_money_command(update: Update, context: CallbackContext) -> None:
             user=return_user
         )
         update.message.reply_text(f"Возврат {money_return.price} - {money_return.description},"
-                                  f" *{return_user.first_name} {return_user.last_name}*")
+                                  f" *{return_user.first_name} {return_user.last_name}*", parse_mode=ParseMode.MARKDOWN)
     else:
         update.message.reply_text('Вы не админ!')
 
@@ -202,8 +202,11 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler('duties', get_duties_for_admin))
     dispatcher.add_handler(CommandHandler('return', return_money_command))
 
-    updater.start_polling()
-    updater.idle()
+    try:
+        updater.start_polling()
+        updater.idle()
+    except NetworkError:
+        exit(1)
 
 
 if __name__ == '__main__':
