@@ -124,12 +124,12 @@ def get_duties_for_admin(update: Update, context: CallbackContext):
             moneyRequests = user.moneyrequest_set.filter(is_done=False)
             moneyReturns = user.moneyreturn_set.filter(is_done=False)
 
-            total_amount = moneyRequests.aggregate(Sum('price'))['price__sum']
+            total_amount = int(moneyRequests.aggregate(Sum('price'))['price__sum'])
             if moneyRequests.count() == 0:
                 continue
 
             if moneyReturns.count() != 0:
-                total_amount -= moneyReturns.aggregate(Sum('price'))['price__sum']
+                total_amount -= int(moneyReturns.aggregate(Sum('price'))['price__sum'])
 
             if total_amount == 0:
                 continue
@@ -141,7 +141,7 @@ def get_duties_for_admin(update: Update, context: CallbackContext):
             for moneyReturn in moneyReturns:
                 text += f"*-{moneyReturn.price}* - {moneyReturn.description}\n"
 
-            text += "\nВсего: *{}*\n\n".format(moneyRequests.aggregate(Sum('price'))['price__sum'])
+            text += "\nВсего: *{}*\n\n".format(total_amount)
 
         update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
     else:
