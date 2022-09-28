@@ -124,12 +124,12 @@ def get_duties_for_admin(update: Update, context: CallbackContext):
             moneyRequests = user.moneyrequest_set.filter(is_done=False)
             moneyReturns = user.moneyreturn_set.filter(is_done=False)
 
-            total_amount = int(moneyRequests.aggregate(Sum('price'))['price__sum'])
             if moneyRequests.count() == 0:
                 continue
+            total_amount = moneyRequests.aggregate(Sum('price'))['price__sum']
 
             if moneyReturns.count() != 0:
-                total_amount -= int(moneyReturns.aggregate(Sum('price'))['price__sum'])
+                total_amount -= moneyReturns.aggregate(Sum('price'))['price__sum']
 
             if total_amount == 0:
                 continue
