@@ -1,6 +1,7 @@
 import os
-
+import dotenv
 import sentry_sdk
+from pathlib import Path
 
 sentry_sdk.init(
     dsn="https://2fb6ef76c9234fc2a0b77ef06b6fda68@o1075119.ingest.sentry.io/6716649",
@@ -21,8 +22,13 @@ from db.models import User, MoneyRequest, MoneyReturn
 from telegram import Update, ParseMode
 from telegram.ext import CallbackContext, CommandHandler, Updater
 
-TOKEN = os.environ.get('MUSIC_QUEUE_TELEGRAM_TOKEN')
-ADMIN_ID = 304915293
+BASE_DIR = Path(__file__).resolve().parent
+dotenv_file = BASE_DIR / ".env"
+if os.path.isfile(dotenv_file):
+    dotenv.load_dotenv(dotenv_file)
+
+TOKEN = os.getenv('TELEGRAM_TOKEN')
+ADMIN_ID = os.getenv('ADMIN_ID')
 
 
 def start_command(update: Update, context: CallbackContext) -> None:
